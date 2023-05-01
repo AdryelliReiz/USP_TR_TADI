@@ -1,0 +1,50 @@
+#Tratamento dos dados sobre as vendas de videogames
+
+##Tabela base
+
+```{r}
+install.packages("dplyr")
+```
+
+```{r}
+#importa a tabela das vendas de video games
+tabela_videogames <- read.csv('tables/video_games_sales.csv')
+tabela_videogames <- tabela_videogames[complete.cases(tabela_videogames), ]
+
+# mostra um exemplo da tabela apenas com um head de 10 linhas
+head(tabela_videogames, 10)
+```
+##Tabela principal
+
+Aqui está uma tabela que contém os dados mais relevantes para nossa pesquisa:
+
+```{r}
+#importa a biblioteca
+library(dplyr)
+
+#define a tabela empresas com as colunas quantidade_de_jogos e vendas_globais
+tabela_empresas <- tabela_videogames %>% 
+  distinct(editora) %>%
+  mutate(q_jogos_vendidos = 0,vendas_global = 0)
+
+#faz um loop para percorrer a tabela empresas e adicionar na coluna "quantidade_de_jogos" a quantidade numerica de linhas que possuem o nome da editora na tabela "de videogames
+for(i in 1:nrow(tabela_empresas)){
+  tabela_empresas[i, "q_jogos_vendidos"] <- sum(tabela_videogames$editora == tabela_empresas[i, "editora"])
+} 
+
+#faz um loop para somar todos os valores presentes nas colunas "vendas_globais" de cada esitora da tabela videogames e passa para a coluna "vendas_globais" de cada editora da tabela empresas
+for(i in 1:nrow(tabela_empresas)){
+  tabela_empresas[i, "vendas_global"] <- sum(filter(tabela_videogames, editora == tabela_empresas[i, "editora"])$vendas_global)
+}
+
+#odena em ondem descrescente a tabela a partir dos maiores valores de vendas 
+tabela_empresas <- tabela_empresas %>% 
+  arrange(desc(vendas_global))
+
+#repassa apenas as 100 primeiras empresas para tabela
+tabela_empresas <- head(tabela_empresas, 30)
+
+tabela_empresas
+
+```
+
